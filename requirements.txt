@@ -1,0 +1,17 @@
+# Tapo C225 PTZ 控制系統依賴套件
+
+# 核心套件 - Tapo 攝影機控制（私有 API）
+pytapo>=3.3.49
+
+# ONVIF 協定支援（標準化 API，支援絕對座標）
+onvif-zeep>=0.2.12
+# 或使用: python-onvif-zeep
+
+# REST API 伺服器（可選）
+flask>=2.0.0
+
+# 如果需要進階功能
+requests>=2.25.0
+
+# RTSP 串流處理（可選）
+# opencv-python>=4.5.0
