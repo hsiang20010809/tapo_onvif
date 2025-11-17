@@ -1,5 +1,15 @@
 # Tapo C225 ONVIF 協定與座標系統詳細說明
 
+## 官方參考文檔
+
+- **[How to view Tapo camera on PC/NAS/NVR through RTSP/Onvif Protocol](https://www.tapo.com/en/faq/34/)** - 官方 RTSP/ONVIF 設定指南
+- **[General questions about viewing Tapo Cameras via RTSP/ONVIF protocols](https://www.tapo.com/us/faq/724/)** - RTSP/ONVIF 常見問題
+- **[General questions about Pan & Tilt feature of TP-Link Camera](https://www.tapo.com/en/faq/761/)** - PTZ 功能說明
+- **[How to do Pan & Tilt Correction on Tapo cameras](https://www.tapo.com/uk/faq/590/)** - PTZ 校準指南
+- **[How to set up Patrol Mode on Tapo cameras](https://www.tapo.com/en/faq/419/)** - 巡邏模式設定
+
+---
+
 ## 目錄
 1. [ONVIF 支援概述](#onvif-支援概述)
 2. [ONVIF vs pytapo 座標系統比較](#onvif-vs-pytapo-座標系統比較)
@@ -46,9 +56,9 @@ Profile S 包含的功能：
 | **業界標準** | ✅ 是（ONVIF 標準） | ❌ 否（私有 API） |
 | **NVR/NAS 整合** | ✅ 原生支援 | ❌ 需額外開發 |
 
-### ONVIF 提供絕對座標
+### 重要發現：ONVIF 提供絕對座標！
 
-**這是解決需求的關鍵：**
+**這是解決你需求的關鍵：**
 
 pytapo 的座標系統：
 ```
@@ -141,20 +151,25 @@ ONVIF 支援三種移動方式：
 
 ## 連接設定
 
+> 📖 **官方指南：** [How to view Tapo camera on PC/NAS/NVR through RTSP/Onvif Protocol](https://www.tapo.com/en/faq/34/)
+
 ### 前置準備
 
 1. **在 Tapo App 建立攝影機帳戶**
-   - 設定 > 進階設定 > 攝影機帳戶
+   - 進入攝影機 Live View → 右上角齒輪圖示 → 進階設定 → 攝影機帳戶
    - 建立專用的帳號密碼
-   - **這個帳號用於 ONVIF/RTSP，不是你的 TP-Link 雲端帳號**
+   - **帳號密碼長度：6-32 字元**
+   - **這個帳號用於 ONVIF/RTSP，必須與你的 TP-Link 雲端帳號不同**
+   - 首次設定時會看到「關於攝影機帳戶」提示，需點擊「了解並同意使用」
 
 2. **確認攝影機 IP**
-   - 在 Tapo App 中查看設備資訊
+   - 在 Tapo App 中：設備設定 → 設備資訊
    - 或在路由器的 DHCP 列表中查找
 
 3. **網路設定**
    - 確保攝影機和控制端在同一網段
    - 開放 Port 2020 (ONVIF) 和 554 (RTSP)
+   - **重要：只在受信任的本地網路使用，確保 Wi-Fi 有加密**
 
 ### 連線參數
 
@@ -167,13 +182,24 @@ PASSWORD = "camera_password"
 
 ### RTSP URL 格式
 
+根據官方文件，RTSP URL 格式如下：
+
 ```
 主串流（高畫質）:
-rtsp://username:password@192.168.1.100:554/stream1
+rtsp://IP_Address/stream1
+或
+rtsp://IP_Address:554/stream1
 
 次串流（低畫質）:
-rtsp://username:password@192.168.1.100:554/stream2
+rtsp://IP_Address/stream2
+或
+rtsp://IP_Address:554/stream2
 ```
+
+**注意：** 
+- 部分軟體（如 VLC）會在連線時要求輸入帳號密碼
+- 某些軟體可能支援在 URL 中嵌入認證：`rtsp://username:password@IP_Address:554/stream1`
+- 串流解析度由 Tapo App 中的「影像品質」設定決定，建議設為「最佳品質」
 
 ---
 
@@ -201,7 +227,7 @@ ctrl = TapoONVIFController(
 )
 ctrl.connect()
 
-# 獲取當前座標
+# 獲取當前座標（ONVIF 的優勢！）
 pan, tilt, zoom = ctrl.get_current_position()
 print(f"當前位置: Pan={pan}, Tilt={tilt}")
 
@@ -217,7 +243,7 @@ ctrl.goto_preset(token)
 
 ### 建立位置對照表
 
-由於 ONVIF 提供絕對座標，可以建立精確的位置對照表：
+由於 ONVIF 提供絕對座標，你可以建立精確的位置對照表：
 
 ```python
 # 定義監控位置
@@ -272,6 +298,13 @@ print(f"Pan: {pan_deg}°, Tilt: {tilt_deg}°")
 
 ONVIF Device Manager 是一個免費的 Windows 應用程式，用於測試和管理 ONVIF 設備。
 
+### 官方推薦的第三方軟體
+
+根據 TP-Link 官方文件，以下軟體經過測試：
+- **Agent DVR** - 支援 ONVIF 自動發現，PTZ 控制
+- **VLC Player** - RTSP 串流播放
+- **iSpy** - 完整監控功能
+
 ### 下載與安裝
 
 從 SourceForge 下載：
@@ -313,7 +346,7 @@ ODM 會顯示：
 
 ---
 
-## 整合建議
+## 企業整合建議
 
 ### 架構選擇
 
@@ -393,6 +426,8 @@ class UnifiedTapoController:
 
 ## 總結
 
+### 解決你的需求
+
 **原始需求：** 找到座標系統，程式控制 PTZ
 
 **解決方案：**
@@ -419,6 +454,52 @@ class UnifiedTapoController:
 ### 重要提醒
 
 - ONVIF 帳戶 ≠ TP-Link 雲端帳戶
-- 需要在 Tapo App 中另外設定攝影機帳戶
+- 需要在 Tapo App 中另外設定攝影機帳戶（6-32 字元）
 - ONVIF 安全性較低，建議在安全的內網環境使用
+- **不建議透過 Port Forwarding 暴露在公網，如需遠端存取請使用 VPN**
 - 定期檢查韌體更新，可能影響 ONVIF 支援
+
+### 儲存限制注意事項
+
+根據官方文件，部分 Tapo 攝影機型號有串流數量限制：
+- **Tapo Care 雲端儲存無法同時與 NVR 或 microSD 卡並用**
+- 如果三者同時使用，NVR 錄影會被停用
+- 若要恢復 NVR 錄影，需移除攝影機中的 microSD 卡
+
+---
+
+## 附錄：官方技術資源
+
+### TP-Link / Tapo 官方文檔
+
+| 主題 | 連結 |
+|------|------|
+| RTSP/ONVIF 設定指南 | https://www.tapo.com/en/faq/34/ |
+| RTSP/ONVIF 常見問題 | https://www.tapo.com/us/faq/724/ |
+| PTZ 功能說明 | https://www.tapo.com/en/faq/761/ |
+| PTZ 校準指南 | https://www.tapo.com/uk/faq/590/ |
+| 巡邏模式設定 | https://www.tapo.com/en/faq/419/ |
+| 如何找到攝影機 IP | https://www.tp-link.com/support/faq/2616/ |
+| Pan & Tilt 功能使用 | https://www.tp-link.com/us/support/faq/2623/ |
+| Tapo C225 產品頁面 | https://www.tapo.com/us/product/smart-camera/tapo-c225/ |
+| Tapo C225 下載中心 | https://www.tp-link.com/us/support/download/tapo-c225/ |
+
+### ONVIF 標準文檔
+
+| 文檔 | 連結 |
+|------|------|
+| ONVIF PTZ Service Specification | https://www.onvif.org/specs/srv/ptz/ONVIF-PTZ-Service-Spec-v1712.pdf |
+| ONVIF Profile S | https://www.onvif.org/profiles/profile-s/ |
+
+### 第三方函式庫
+
+| 函式庫 | 連結 | 用途 |
+|--------|------|------|
+| pytapo | https://github.com/JurajNyiri/pytapo | Tapo 攝影機私有 API |
+| python-onvif-zeep | https://pypi.org/project/onvif-zeep/ | ONVIF Python 客戶端 |
+| Home Assistant Tapo Control | https://github.com/JurajNyiri/HomeAssistant-Tapo-Control | Home Assistant 整合 |
+
+### 故障排除
+
+如果 RTSP/ONVIF 連線失敗，可參考：
+- **官方故障排除指南：** https://community.tp-link.com/en/smart-home/forum/topic/652710
