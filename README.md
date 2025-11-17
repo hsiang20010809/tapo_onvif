@@ -201,7 +201,7 @@ ctrl = TapoONVIFController(
 )
 ctrl.connect()
 
-# 獲取當前座標（ONVIF 的優勢！）
+# 獲取當前座標
 pan, tilt, zoom = ctrl.get_current_position()
 print(f"當前位置: Pan={pan}, Tilt={tilt}")
 
@@ -217,7 +217,7 @@ ctrl.goto_preset(token)
 
 ### 建立位置對照表
 
-由於 ONVIF 提供絕對座標，你可以建立精確的位置對照表：
+由於 ONVIF 提供絕對座標，可以建立精確的位置對照表：
 
 ```python
 # 定義監控位置
@@ -313,7 +313,7 @@ ODM 會顯示：
 
 ---
 
-## 企業整合建議
+## 整合建議
 
 ### 架構選擇
 
@@ -392,8 +392,6 @@ class UnifiedTapoController:
 ---
 
 ## 總結
-
-### 解決你的需求
 
 **原始需求：** 找到座標系統，程式控制 PTZ
 
